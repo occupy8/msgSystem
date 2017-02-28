@@ -36,13 +36,13 @@ func initServer(hostAndPort string) *net.TCPListener {
 	serverAddr, err := net.ResolveTCPAddr("tcp", hostAndPort)
 	if err != nil {
 		slog.Info("Resolving address:port failed error:%s", err.Error())
-		return
+		return nil
 	}
 
 	listener, err := net.ListenTCP("tcp", serverAddr)
 	if err != nil {
 		slog.Info("listen Tcp failed error:%s", err.Error())
-		return
+		return nil
 	}
 
 	slog.Info("ListenTCP: %s", listener.Addr().String())
@@ -92,7 +92,7 @@ func (self *ManagerServer) ConnectionHandler(conn net.Conn) {
 	}
 
 DISCONNECT:
-	err := conn.Close()
+	conn.Close()
 	slog.Info("Closed connection: %s", connFrom)
 }
 
@@ -139,7 +139,7 @@ func (self *ManagerServer) Reader(conn net.Conn, readerChannel chan []byte) {
 						break
 					}
 
-					res, err := stmt.Exec(reg.Username, reg.Password, reg.Usertype)
+					stmt.Exec(reg.Username, reg.Password, reg.Usertype)
 
 					reg_ack.Ack = "ok"
 				}
@@ -230,11 +230,53 @@ func (self *ManagerServer) Reader(conn net.Conn, readerChannel chan []byte) {
 				break
 
 			case protocol.KEEP_ALIVE:
-
-				send := protocol.Packet(message, protocol.KEEP_ALIVE)
-				conn.Write(send)
+				{
+					send := protocol.Packet(message, protocol.KEEP_ALIVE)
+					conn.Write(send)
+				}
 				break
 			case protocol.CREATE_GROUP:
+				break
+			case protocol.GET_TASK:
+				{
+					var msg protocol.Get_Task
+
+					err := json.Unmarshal(message, &msg)
+					if err != nil {
+						slog.Info("get task json unmarshal error")
+						break
+					}
+
+					var lis protocol.Task_ack
+					lis.Deliver_id = msg.Deliver_id
+					var condition string
+					condition = fmt.Sprintf("SELECT Pkg_id,Sender,Sender_addr,Sender_phone,Receiver,Receiver_addr,Receiver_phone FROM pkg_list where Deliver_id='%s'", msg.Deliver_id)
+					rows, err := self.DbM.Db.Query(condition)
+					if err == nil {
+						slog.Info("find pkg info failed")
+						break
+					}
+
+					for rows.Next() {
+						var info protocol.Pkg_info
+						err = rows.Scan(&info.Id, &info.Sender, &info.Sender_addr, &info.Sender_phone, &info.Receiver, &info.Receiver_addr, &info.Receiver_phone)
+						if err != nil {
+							slog.Info("scan error")
+							continue
+						}
+
+						lis.Pkg_list = append(lis.Pkg_list, info)
+					}
+					//response to client
+					buf, err := json.Marshal(lis)
+					if err != nil {
+						slog.Info("json marshal error:%s", err.Error())
+						break
+					}
+
+					send := protocol.Packet(buf, protocol.GET_TASK_ACK)
+					conn.Write(send)
+				}
 				break
 			case protocol.REPORT_LOCATION:
 				var msg protocol.Report_location
