@@ -23,23 +23,24 @@ func main() {
 
 	cfg.DumpConfig()
 
-	MsgServer := NewMsgServerClient(cfg)
+	//MsgServer := NewMsgServerClient(cfg)
 	ManagerServer := NewManagerServerClient(cfg)
 
 	go ManagerServer.StartClient(cfg)
-	go MsgServer.StartClient(cfg)
+	//go MsgServer.StartClient(cfg)
 
 	var userName string
 
 	fmt.Println("user:")
 	fmt.Scanf("%s", &userName)
 
-	time.Sleep(2 * time.Second)
-	ManagerServer.SendRegisterCmd(userName, "123456", 1)
-	time.Sleep(2 * time.Second)
+	//time.Sleep(2 * time.Second)
+	//ManagerServer.SendRegisterCmd(userName, "123456", 1)
+	//time.Sleep(2 * time.Second)
 	ManagerServer.SendLoginManagerCmd(userName, "123456", 1)
 	time.Sleep(2 * time.Second)
-	MsgServer.SendLoginMsgServer(userName, ManagerServer.Session)
+	ManagerServer.SendGetTaskCmd("pipi")
+	//MsgServer.SendLoginMsgServer(userName, ManagerServer.Session)
 	//ManagerServer.SendLogoutManagerCmd("zozo", ManagerServer.Session)
 
 	//for {
@@ -47,6 +48,7 @@ func main() {
 	//	ManagerServer.SendReportLocationCmd("(100,99)", anounce)
 	//	time.Sleep(10 * time.Second)
 	//}
+
 	time.Sleep(3 * time.Second)
 	var msg string
 	//to = "co"
@@ -57,6 +59,6 @@ func main() {
 		//fmt.Scanf("%s", &msg)
 		time.Sleep(2 * time.Second)
 		//MsgServer.SendP2pMessage(userName, msg, to)
-		MsgServer.SendGroupMessage(userName, msg)
+		//MsgServer.SendGroupMessage(userName, msg)
 	}
 }

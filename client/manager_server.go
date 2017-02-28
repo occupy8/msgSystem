@@ -72,6 +72,13 @@ func (self *ManagerServerClient) Reader(conn net.Conn, readerChannel chan []byte
 
 				fmt.Println("receive LOGIN_MANAGER_ACK")
 				fmt.Println(string(message))
+			case protocol.GET_TASK_ACK:
+				var msg protocol.Task_ack
+
+				json.Unmarshal(message, &msg)
+
+				fmt.Println("receive GET_TASK_ACK")
+				fmt.Println(string(message))
 
 			case protocol.LOGOUT_MANAGER_ACK:
 				var msg protocol.Logout
@@ -115,6 +122,14 @@ func (self *ManagerServerClient) SendRegisterCmd(user string, password string, u
 	send.Password = password
 
 	self.SendToServer(send, protocol.REGISTER_MANAGER)
+}
+
+func (self *ManagerServerClient) SendGetTaskCmd(id string) {
+	var send protocol.Get_Task
+
+	send.Deliver_id = id
+
+	self.SendToServer(send, protocol.GET_TASK)
 }
 
 func (self *ManagerServerClient) SendLoginManagerCmd(user string, password string, userType int) {
