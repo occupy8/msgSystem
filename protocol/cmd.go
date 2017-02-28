@@ -63,6 +63,9 @@ const (
 
 	EXIT_GROUP     = 0x0012
 	EXIT_GROUP_ACK = 0xF012
+
+	GET_TASK     = 0x0013
+	GET_TASK_ACK = 0xF013
 )
 
 type AddInGroup struct {
@@ -173,6 +176,27 @@ type Report_location_ack struct {
 
 type Alive_ping struct {
 	ping string
+}
+
+type Pkg_info struct {
+	Id             string
+	Sender         string
+	Sender_addr    string
+	Sender_phone   string
+	Receiver       string
+	Receiver_addr  string
+	Receiver_phone string
+}
+
+type Task_ack struct {
+	Deliver_id string
+	Time_      string
+	Pkg_list   []Pkg_info
+}
+
+type Get_Task struct {
+	Deliver_id string
+	Time_      string
 }
 
 func Packet(message []byte, cmd int32) []byte {
