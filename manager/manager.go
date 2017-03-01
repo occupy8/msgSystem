@@ -252,8 +252,8 @@ func (self *ManagerServer) Reader(conn net.Conn, readerChannel chan []byte) {
 					var condition string
 					condition = fmt.Sprintf("SELECT Pkg_id,Sender,Sender_addr,Sender_phone,Receiver,Receiver_addr,Receiver_phone FROM pkg_list where Deliver_id='%s'", msg.Deliver_id)
 					rows, err := self.DbM.Db.Query(condition)
-					if err == nil {
-						slog.Info("find pkg info failed")
+					if err != nil {
+						slog.Info("find pkg info from db failed. err:%s", err.Error())
 						break
 					}
 
