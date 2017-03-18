@@ -69,3 +69,24 @@ type Report_location_ack struct {
 type Alive struct {
 	Ping string
 }
+
+type Pkg_info struct {
+	Id             string
+	Sender         string
+	Sender_addr    string
+	Sender_phone   string
+	Receiver       string
+	Receiver_addr  string
+	Receiver_phone string
+}
+
+type Task_ack struct {
+	Deliver_id string
+	Time_      string
+	Pkg_list   []Pkg_info
+}
+
+type Get_Task struct {
+	Deliver_id string
+	Time_      string
+}

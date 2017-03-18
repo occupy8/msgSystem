@@ -3,6 +3,9 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"msgSystem/newServer/protocol"
+
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -73,6 +76,40 @@ func (self *DbManager) InsertUser(name string, pwd string, utype string) error {
 	stmt.Exec(name, pwd, utype)
 
 	return err
+}
+
+func (self *DbManager) GetTaskList(deliverId string, lis *protocol.Task_ack) error {
+
+	lis.Deliver_id = deliverId
+	var condition string
+	condition = fmt.Sprintf("SELECT Pkg_id,Sender,Sender_addr,Sender_phone,Receiver,Receiver_addr,Receiver_phone FROM pkg_list where Deliver_id='%s'", deliverId)
+	rows, err := self.Db.Query(condition)
+	if err != nil {
+		return err
+	}
+
+	for rows.Next() {
+		var info protocol.Pkg_info
+		err = rows.Scan(&info.Id, &info.Sender, &info.Sender_addr, &info.Sender_phone, &info.Receiver, &info.Receiver_addr, &info.Receiver_phone)
+		if err != nil {
+			continue
+		}
+
+		lis.Pkg_list = append(lis.Pkg_list, info)
+	}
+
+	return err
+}
+
+func (self *DbManager) InsertLocation(la string, lo string, user string) error {
+	stmt, err := self.Db.Prepare(`INSERT location (user, lo, la, time) values(?,?,?,?)`)
+	if err != nil {
+
+		return err
+	}
+	stmt.Exec(user, lo, la, string(time.Now().Unix()))
+
+	return nil
 }
 
 func check(err error) {
