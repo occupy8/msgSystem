@@ -1,0 +1,8 @@
+[server_addr]
+ip_address = ":9999"
+
+[general]
+max_run_tasks = 20
+log_path = "/opt/project/master/log/"
+conf_file = "/opt/project/master/conf/master.toml"
+conf_path = "/opt/project/master/conf/"
